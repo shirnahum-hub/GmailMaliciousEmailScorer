@@ -32,7 +32,12 @@ def analyze_email(sender, subject, body, links=None):
     common_domain_endings = [".com", ".org", ".net", ".co.il", ".io"]
 
     if "@" in sender:
-        domain = sender.split("@")[1]
+        email_part = sender
+
+        if "<" in sender and ">" in sender:
+            email_part = sender.split("<")[1].split(">")[0]
+
+        domain = email_part.split("@")[1]
 
         if not domain.endswith(tuple(common_domain_endings)):
             score += 10
