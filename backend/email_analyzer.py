@@ -62,7 +62,7 @@ def analyze_email(sender, subject, body, links=None, attachments=None):
 
     if len(found_suspicious_words) > 0:
         reasons.append(
-            "Suspicious words found: " + ", ".join(found_suspicious_words)
+            "Suspicious words found in email content: " + ", ".join(found_suspicious_words)
         )
 
     if len(links) > 0:
@@ -80,7 +80,7 @@ def analyze_email(sender, subject, body, links=None, attachments=None):
         for word in suspicious_link_words:
             if word in link_lower:
                 score += 10
-                reasons.append("Link contains suspicious word: " + word)
+                reasons.append("Sensitive keyword found in link: " + word)
 
     if len(links) >= 3:
         score += 10
