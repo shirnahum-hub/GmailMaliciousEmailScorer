@@ -1,23 +1,46 @@
 # SafeInbox — Gmail Malicious Email Scorer
 
-SafeInbox is a Gmail Add-on that analyzes an opened email and helps the user understand whether it may be suspicious or malicious.
+SafeInbox is a Gmail Add-on that analyzes the currently opened email and helps the user understand whether it may be risky.
 
-The add-on reads selected signals from the currently opened Gmail message, sends them to a Python Flask backend, and displays a risk score, verdict, recommendation, and risk indicators directly inside Gmail.
+The project was built as part of the Upwind Security Bootcamp home assignment.
+
+The solution includes:
+
+- A Gmail Add-on built with Google Apps Script and Google Workspace APIs
+- A Python Flask backend deployed on Render
+- A rule-based email risk scoring engine
+
+---
+
+## What the Add-on Does
+
+When the user opens an email in Gmail, SafeInbox can analyze it and show:
+
+- Risk score from 0 to 100
+- Verdict: Low Risk, Suspicious, or High Risk
+- Recommendation for the user
+- Risk indicators
+- A button to move high-risk emails to spam and report them to IT Security
+- A weekly warning if many suspicious emails were detected from different senders
 
 ---
 
 ## Main Features
 
-- Analyze the currently opened Gmail email
-- Calculate an email risk score from 0 to 100
-- Classify the email as Low Risk, Suspicious, or High Risk
-- Display a short recommendation based on the verdict
-- Show or hide detailed risk indicators
-- Detect suspicious words in the email content
-- Detect suspicious sender patterns
-- Detect insecure or suspicious links
-- Analyze attachment metadata without opening or executing files
-- Allow the user to move high-risk emails to spam
+- Reads the currently opened Gmail message
+- Extracts selected email signals:
+  - Sender
+  - Subject
+  - Body
+  - Links
+  - Attachment metadata
+- Sends the data to a Flask backend
+- Calculates a risk score
+- Shows a clear result inside Gmail
+- Allows the user to expand or hide risk indicators
+- Allows moving high-risk emails to spam
+- Sends an IT Security report for high-risk emails
+- Tracks weekly suspicious email activity using Apps Script user properties
 
 ---
 
@@ -30,25 +53,26 @@ The add-on reads selected signals from the currently opened Gmail message, sends
 - GmailApp
 - CardService
 - UrlFetchApp
+- PropertiesService
 
 ### Backend
 
 - Python
 - Flask
 - Gunicorn
-- Render deployment
+- Render
 
 ---
 
 ## Architecture
 
-The system is built from two main parts:
+The system has two main parts:
 
 1. **Gmail Add-on**  
-   The Gmail Add-on runs inside Gmail. It reads the currently opened email using Google Workspace APIs and extracts selected email data such as sender, subject, body, links, and attachment metadata.
+   Runs inside Gmail. It reads the opened email using Google Workspace APIs and sends selected email data to the backend.
 
-2. **Backend Service**  
-   The backend receives the email data, analyzes it using rule-based scoring logic, and returns a structured JSON response with a score, verdict, and risk indicators.
+2. **Flask Backend**  
+   Receives the email data, analyzes it, and returns a score, verdict, and risk indicators.
 
 ```text
 Opened Gmail email
@@ -59,9 +83,9 @@ Google Workspace APIs
         ↓
 Flask backend on Render
         ↓
-Email scoring logic
+Risk scoring logic
         ↓
-Risk score + verdict + reasons
+Score + verdict + indicators
         ↓
 Displayed inside Gmail
 ```
@@ -72,7 +96,7 @@ Displayed inside Gmail
 
 ### POST `/analyze-email`
 
-The backend exposes an endpoint that receives email data in JSON format.
+The backend receives email data as JSON.
 
 Example request:
 
@@ -114,35 +138,61 @@ Example response:
 
 ## Risk Scoring Logic
 
-The backend uses a rule-based scoring approach. Each suspicious signal adds points to the total risk score.
+The backend uses a simple rule-based scoring model.
 
-### Sender signals
+Each suspicious signal adds points to the total score.
 
-- Invalid sender email address
+### Sender checks
+
+- Missing or invalid sender email
 - Uncommon sender domain ending
-- Suspicious words in the sender address, such as `login`, `verify`, `alert`, or `security`
+- Suspicious words in the sender address
 
-### Email content signals
+### Email content checks
 
-- Suspicious words in the subject or body, such as `urgent`, `password`, `verify`, `account`, or `click`
+- Suspicious words such as:
+  - urgent
+  - password
+  - verify
+  - account
+  - click
 
-### Link signals
+### Link checks
 
-- Presence of links
+- Links inside the email
 - Insecure `http://` links
-- Suspicious or sensitive words inside links, such as `login`, `verify`, `password`, or `account`
+- Sensitive words inside links, such as:
+  - login
+  - verify
+  - password
+  - account
 - Uncommon link domain endings
-- Multiple links in the same email
+- Multiple links
 - Emails that ask the user to take action through a link
 
-### Attachment signals
+### Attachment checks
 
-- Presence of attachments
-- Risky file extensions such as `.exe`, `.js`, `.scr`, `.bat`, `.cmd`, `.html`, or `.zip`
+The system does not open or execute attachments.
 
-The final score is capped at 100.
+It only checks safe metadata:
 
-Verdict thresholds:
+- File name
+- Content type
+- File size
+
+Risky extensions include:
+
+- `.exe`
+- `.js`
+- `.scr`
+- `.bat`
+- `.cmd`
+- `.html`
+- `.zip`
+
+---
+
+## Verdict Thresholds
 
 ```text
 0–29   → Low Risk
@@ -150,37 +200,56 @@ Verdict thresholds:
 70–100 → High Risk
 ```
 
+The final score is capped at 100.
+
 ---
 
 ## Security Considerations
 
-Security was treated as a first-class concern throughout the implementation.
+Security was treated as an important part of the project.
 
 Emails, links, attachments, and backend responses are treated as untrusted input.
 
-The system does not open, execute, or parse the contents of attachments. Instead, it only analyzes safe metadata such as:
+The system does not:
 
-- Attachment name
-- Content type
-- File size
+- Execute attachments
+- Open attachment contents
+- Forward attachments to IT
+- Rely only on the sender address
 
-This reduces the risk of handling potentially malicious files directly.
+Instead, it analyzes selected metadata and risk indicators.
 
-The Gmail Add-on only sends selected email signals to the backend for analysis.
+For high-risk emails, the add-on can move the email to spam and send a short report to IT Security with the score, sender, subject, and risk indicators.
+
+---
+
+## Weekly Security Alert
+
+The add-on keeps a lightweight weekly count of suspicious emails using Apps Script `PropertiesService`.
+
+If the user receives many suspicious emails from different senders during the week, the add-on displays a warning suggesting that the user contact IT Security.
+
+This is an MVP version of a security monitoring idea. In production, this could be connected to a security mailbox, SIEM, or ticketing system.
 
 ---
 
 ## UI Behavior
 
-The Gmail Add-on displays a concise result first:
+The UI is designed to show the most important information first.
+
+At first, the user sees:
 
 - Risk score
 - Verdict
 - Recommendation
 
-The user can choose to expand the detailed risk indicators using the **Show risk indicators** button.
+The user can click **Show risk indicators** to see the detailed reasons.
 
-For high-risk emails, the add-on also displays a **Move to Spam** action button.
+For high-risk emails, the add-on shows:
+
+```text
+Move to Spam & Report to IT
+```
 
 ---
 
@@ -188,7 +257,7 @@ For high-risk emails, the add-on also displays a **Move to Spam** action button.
 
 The backend is deployed on Render.
 
-Production backend URL:
+Backend URL:
 
 ```text
 https://gmailmaliciousemailscorer.onrender.com
@@ -216,19 +285,19 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
-Run the Flask backend:
+Run the backend:
 
 ```bash
 python backend/app.py
 ```
 
-The local server will run at:
+Local server:
 
 ```text
 http://127.0.0.1:5000
 ```
 
-Test the health endpoint:
+Health check:
 
 ```text
 http://127.0.0.1:5000/health
@@ -245,10 +314,12 @@ GmailMaliciousEmailScorer/
 │   ├── app.py
 │   └── email_analyzer.py
 │
+├── gmail-addon/
+│   ├── Code.gs
+│   └── appsscript.json
+│
 ├── assets/
 │   └── safeinbox-logo.png
-│
-├── gmail-addon/
 │
 ├── requirements.txt
 ├── render.yaml
@@ -259,33 +330,34 @@ GmailMaliciousEmailScorer/
 
 ## Limitations
 
-This project uses rule-based analysis and does not replace a full enterprise-grade email security platform.
+This is an MVP and is not production-ready.
 
-Current limitations include:
+Current limitations:
 
-- The scoring logic is based on predefined rules
-- The system does not perform real-time threat intelligence lookups
-- The system does not scan attachment contents
-- Some legitimate emails may still receive risk points if they contain sensitive words or links
-- Some malicious emails may avoid detection if they do not match the current rule set
+- The scoring model is rule-based
+- It does not use threat intelligence databases
+- It does not scan attachment contents
+- It does not fully block senders
+- Some legitimate emails may receive risk points
+- Some malicious emails may not match the current rules
 
 ---
 
 ## Future Improvements
 
-Possible future improvements include:
+Possible improvements:
 
-- Adding threat intelligence checks for link domains
-- Improving domain reputation analysis
-- Add sender blocking or user-defined trusted/blocked sender lists.
-- Adding attachment sandboxing or external file scanning
-- Adding user-defined trusted senders
-- Supporting organization-level policies
-- Improving the UI further with more visual risk indicators
-- Adding AI-based explanation and phishing pattern detection
+- Add domain reputation checks
+- Add threat intelligence lookup for links
+- Add organization-level block lists
+- Add trusted sender lists
+- Add a real IT/SOC reporting integration
+- Add attachment sandboxing
+- Improve the visual UI further
+- Add AI-based phishing explanation
 
 ---
 
 ## Author
 
-Developed by Shir Nahum as part of the Upwind Security Bootcamp home assignment.
+Developed by Shir Nahum.
