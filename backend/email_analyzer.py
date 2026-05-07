@@ -107,7 +107,7 @@ def analyze_email(sender, subject, body, links=None, attachments=None):
     suspicious_attachment_extensions = [".exe", ".js", ".scr", ".bat", ".cmd", ".html", ".zip"]
 
     if len(attachments) > 0:
-        score += 15
+        score += 10 + (len(attachments) * 5)
         reasons.append("Email contains " + str(len(attachments)) + " attachment(s)")
 
     for attachment in attachments:
