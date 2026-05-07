@@ -27,12 +27,13 @@ def analyze_email_route():
             "message": "Request body must be valid JSON"
         }), 400
 
-    sender = data.get("sender")
-    subject = data.get("subject")
-    body = data.get("body")
-    links = data.get("links")
+    sender = data.get("sender", "")
+    subject = data.get("subject", "")
+    body = data.get("body", "")
+    links = data.get("links", [])
+    attachments = data.get("attachments", [])
 
-    score, verdict, reasons = analyze_email(sender, subject, body, links)
+    score, verdict, reasons = analyze_email(sender, subject, body, links, attachments)
 
     return jsonify({
         "status": "success",

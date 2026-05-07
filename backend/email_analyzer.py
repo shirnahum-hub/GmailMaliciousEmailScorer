@@ -1,8 +1,11 @@
-def analyze_email(sender, subject, body, links=None):
+def analyze_email(sender, subject, body, links=None, attachments=None):
     score = 0
     reasons = []
     if links is None:
         links = []
+
+    if attachments is None:
+        attachments = []
 
     if sender is None:
         sender = ""
@@ -75,6 +78,20 @@ def analyze_email(sender, subject, body, links=None):
     if len(links) >= 3:
         score += 10
         reasons.append("Email contains multiple links")
+
+    suspicious_attachment_extensions = [".exe", ".js", ".scr", ".bat", ".cmd", ".html", ".zip"]
+
+    if len(attachments) > 0:
+        score += 10
+        reasons.append("Email contains " + str(len(attachments)) + " attachment(s)")
+
+    for attachment in attachments:
+        attachment_name = attachment.get("name", "").lower()
+
+        for extension in suspicious_attachment_extensions:
+            if attachment_name.endswith(extension):
+                score += 30
+                reasons.append("Attachment has a risky file extension: " + extension)
 
     if len(reasons) == 0:
         reasons.append("No suspicious indicators found")
