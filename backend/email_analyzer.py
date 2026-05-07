@@ -77,6 +77,15 @@ def analyze_email(sender, subject, body, links=None, attachments=None):
             score += 15
             reasons.append("Link uses insecure HTTP: " + link)
 
+        link_domain = ""
+
+        if "://" in link_lower:
+            link_domain = link_lower.split("://")[1].split("/")[0]
+
+        if link_domain != "" and not link_domain.endswith(tuple(common_domain_endings)):
+            score += 15
+            reasons.append("Link domain has an uncommon ending: " + link_domain)
+
         for word in suspicious_link_words:
             if word in link_lower:
                 score += 10
@@ -86,10 +95,19 @@ def analyze_email(sender, subject, body, links=None, attachments=None):
         score += 10
         reasons.append("Email contains multiple links")
 
+    call_to_action_words = ["click", "open", "verify", "login"]
+
+    if len(links) > 0:
+        for word in call_to_action_words:
+            if word in subject_lower or word in body_lower:
+                score += 15
+                reasons.append("Email asks the user to take action through a link")
+                break
+
     suspicious_attachment_extensions = [".exe", ".js", ".scr", ".bat", ".cmd", ".html", ".zip"]
 
     if len(attachments) > 0:
-        score += 10
+        score += 15
         reasons.append("Email contains " + str(len(attachments)) + " attachment(s)")
 
     for attachment in attachments:
