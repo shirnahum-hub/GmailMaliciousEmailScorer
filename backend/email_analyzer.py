@@ -53,10 +53,17 @@ def analyze_email(sender, subject, body, links=None, attachments=None):
             score += 5
             reasons.append("Sender contains suspicious word: " + word)
 
+    found_suspicious_words = []
+
     for word, points in suspicious_words.items():
         if word in subject_lower or word in body_lower:
             score += points
-            reasons.append("Email content contains suspicious word: " + word)
+            found_suspicious_words.append(word)
+
+    if len(found_suspicious_words) > 0:
+        reasons.append(
+            "Suspicious words found: " + ", ".join(found_suspicious_words)
+        )
 
     if len(links) > 0:
         score += 10
