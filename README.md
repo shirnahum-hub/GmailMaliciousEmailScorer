@@ -238,6 +238,9 @@ This is an MVP version of a security monitoring idea. In production, this could 
 
 ## UI Behavior
 
+<img width="712" height="943" alt="image" src="https://github.com/user-attachments/assets/5af3387c-7280-4aa4-b26f-295be0b65cc3" />
+
+
 The UI is designed to show the most important information first.
 
 At first, the user sees:
