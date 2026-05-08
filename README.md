@@ -1,8 +1,20 @@
 # Safe Inbox — Gmail Malicious Email Scorer
 
-Safe Inbox is a Gmail Add-on that analyzes the currently opened email and helps the user understand whether it may be risky.
+## Why this project?
 
-The project was built as part of the Upwind Security Bootcamp home assignment.
+We’ve all been there.
+
+You open your inbox, see an email that looks *almost* legitimate, click “open”, maybe click a link, maybe download something, and suddenly you start wondering:
+
+“Wait… was that actually from Google?”
+“Why is my bank calling me ‘Dear customer’?”
+“And why does this urgent security warning have three spelling mistakes?”
+
+In a world where suspicious emails can look surprisingly convincing, users need a quick and simple way to understand whether an email might be risky before interacting with it.
+
+That’s where **Gmail Malicious Email Scorer** comes in.
+
+This project analyzes email content and highlights possible warning signs, such as suspicious wording, risky links, or unusual sender behavior. It then provides a clear risk score and verdict, helping users quickly understand whether an email looks safe, suspicious, or potentially dangerous.
 
 The solution includes:
 
@@ -138,7 +150,7 @@ Example response:
 
 ## Risk Scoring Logic
 
-The backend uses a simple rule-based scoring model.
+The backend uses a rule-based scoring model.
 
 Each suspicious signal adds points to the total score.
 
@@ -146,26 +158,17 @@ Each suspicious signal adds points to the total score.
 
 - Missing or invalid sender email
 - Uncommon sender domain ending
-- Suspicious words in the sender address
+- Suspicious words in the sender address such as verify, login, alert, support, security.
 
 ### Email content checks
 
-- Suspicious words such as:
-  - urgent
-  - password
-  - verify
-  - account
-  - click
+- Suspicious words such as urgent, password, verify, account, click
 
 ### Link checks
 
 - Links inside the email
 - Insecure `http://` links
-- Sensitive words inside links, such as:
-  - login
-  - verify
-  - password
-  - account
+- Sensitive words inside links, such as, login, verify, password, account
 - Uncommon link domain endings
 - Multiple links
 - Emails that ask the user to take action through a link
@@ -176,6 +179,7 @@ The system does not open or execute attachments.
 
 It only checks safe metadata:
 
+- Number of attachments
 - File name
 - Content type
 - File size
@@ -206,7 +210,7 @@ The final score is capped at 100.
 
 ## Security Considerations
 
-Security was treated as an important part of the project.
+The security of the user is the heart of the project.
 
 Emails, links, attachments, and backend responses are treated as untrusted input.
 
@@ -215,9 +219,8 @@ The system does not:
 - Execute attachments
 - Open attachment contents
 - Forward attachments to IT
-- Rely only on the sender address
 
-Instead, it analyzes selected metadata and risk indicators.
+Instead, it analyzes selected metadata and risk indicators, that's what I decided to focus on the MVP.
 
 For high-risk emails, the add-on can move the email to spam and send a short report to IT Security with the score, sender, subject, and risk indicators.
 
@@ -225,11 +228,11 @@ For high-risk emails, the add-on can move the email to spam and send a short rep
 
 ## Weekly Security Alert
 
-The add-on keeps a lightweight weekly count of suspicious emails using Apps Script `PropertiesService`.
+The add-on keeps a weekly count of suspicious emails using Apps Script `PropertiesService`.
 
-If the user receives many suspicious emails from different senders during the week, the add-on displays a warning suggesting that the user contact IT Security.
+If the user receives many suspicious emails from different senders during the week, I believe it's something the IT should know and the user needs to take caution action. The add-on displays a warning suggesting that the user contact IT Security.
 
-This is an MVP version of a security monitoring idea. In production, this could be connected to a security mailbox, SIEM, or ticketing system.
+This is an MVP version of a security monitoring idea. In production, this could be connected to a security mailbox or ticketing system.
 
 ---
 
@@ -347,7 +350,7 @@ Current limitations:
 
 Possible improvements:
 
-- Add domain reputation checks
+- Replace the current “Move to Spam” action with a sender-blocking flow
 - Add threat intelligence lookup for links
 - Add organization-level block lists
 - Add trusted sender lists
