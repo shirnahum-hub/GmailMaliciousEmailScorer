@@ -1,6 +1,6 @@
-# SafeInbox — Gmail Malicious Email Scorer
+# Safe Inbox — Gmail Malicious Email Scorer
 
-SafeInbox is a Gmail Add-on that analyzes the currently opened email and helps the user understand whether it may be risky.
+Safe Inbox is a Gmail Add-on that analyzes the currently opened email and helps the user understand whether it may be risky.
 
 The project was built as part of the Upwind Security Bootcamp home assignment.
 
